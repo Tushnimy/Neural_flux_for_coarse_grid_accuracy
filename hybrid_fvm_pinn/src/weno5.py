@@ -87,22 +87,15 @@ def weno5_flux_derivative(u: np.ndarray, dx: float) -> np.ndarray:
     """
     fp, fm, _ = lf_split_flux(u)
 
-    # periodic padding: need 3 ghosts on each side to form stencils safely
-    # We'll pad with 3 cells for + and 3+? for minus; easiest is 3 on each side,
-    # but our slicing expects at least 5 offset; pad 4 to be safe.
     pad = 4
     fp_pad = np.r_[fp[-pad:], fp, fp[:pad]]
     fm_pad = np.r_[fm[-pad:], fm, fm[:pad]]
 
-    Fp = weno5_reconstruct_plus(fp_pad)   # length N+?; specifically N+? = len(fp_pad)-4
+    Fp = weno5_reconstruct_plus(fp_pad)   
     Fm = weno5_reconstruct_minus(fm_pad)
 
-    # After reconstruction, Fp and Fm correspond to interfaces aligned with original indices.
-    # For pad=4, F arrays length = N+4?; pick the central N interfaces.
     N = u.size
-    # empirically: reconstructed length is len(pad)-4 = N+4
-    # interfaces we want: i+1/2 for i=0..N-1 => N interfaces.
-    start = 2  # aligns to original domain after padding
+    start = 2  
     Fp_c = Fp[start:start+N]
     Fm_c = Fm[start:start+N]
     F = Fp_c + Fm_c
